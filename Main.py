@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 TYPE_KPT = '8'  # LoanCategoryId 4:平衡型,8:保守型
-
+file_name = 'data.xlsx' # 存储数据文件名
 
 # html转换
 def html_to_soup(url):
@@ -204,11 +206,21 @@ def data_spider(total_page=100):
 def data_output_xls(data_list):
     print('数据输出开始....')
     for it in data_list:
-        print(it)
-        print('--------\n--------\n--------\n--------\n--------\n')
+        wb = Workbook()
+        work_sheet = wb.create_sheet(title="拍拍贷数据")
+        row = 1
+        for i in range(len(data_list)):
+            for j in range(len(it['investor_list'])):
+                _ = work_sheet.cell(column=1, row=row, value="%s" % it['risk_level'])
+                _ = work_sheet.cell(column=2, row=row, value="%s" % it['user_name'])
+                _ = work_sheet.cell(column=3, row=row, value="%s" % it['investor_list'][j][''])
+                _ = work_sheet.cell(column=4, row=row, value="%s" % it['investor_list'][j][''])
+                row += 1
+        wb.save(filename=file_name)
     print('数据输出完成....')
 
 
 # Main method
 if __name__ == '__main__':
     data_spider()
+
