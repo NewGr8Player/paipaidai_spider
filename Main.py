@@ -113,7 +113,7 @@ def details_info_getter(details_url):
     investor_list = []
     # 投资人单条信息
     for ol in ol_list:
-        # 单挑投资人信息
+        # 单条投资人信息
         investor_info = {}
         li_list = ol.find_all('li')
         investor_info['investor_id'] = li_list[0].find('span', attrs={'class': 'listname'}).get_text()  # 投资人id
