@@ -1,9 +1,9 @@
 import time
 import datetime
 import requests
+import random
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
-
 
 TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 file_name = 'data.xlsx'  # 存储数据文件名
@@ -104,9 +104,12 @@ def details_info_getter(details_url):
         elif '收入情况' in str(it):
             income_info = it.find('span').get_text()
 
-    # 认证信息
-    record_info_list = soup.find('ul', attrs={'class', 'record-info'}).findAll('li')
-    verfied_info = ''
+    # 认证信息 [可能不存在]
+    record_info_list_parent = soup.find('ul', attrs={'class', 'record-info'})
+    record_info_list = []
+    if record_info_list_parent is not None:
+        record_info_list = record_info_list_parent.findAll('li')
+    verfied_info = '--'
     for i in range(len(record_info_list)):
         verfied_info += (record_info_list[i].get_text()) + ' '
     verfied_info = verfied_info.strip()
@@ -208,8 +211,11 @@ def data_spider(total_page=100):
                 url = 'https:' + it
                 print('爬取链接:' + url)
                 data_list.append(details_info_getter(url))
+                # 网站有一定的反爬虫机制，长期规律性连接可能导致Ip被锁或黑名单
+                sleep_second = random.randint(0, 1)
+                print('随机休眠' + str(sleep_second) + '秒...')
+                time.sleep(sleep_second)
             data_output_xls(data_list)  # 输出数据
-            time.sleep(1)
         else:
             print('Error:未找到数据!\n尝试重新获取...')
             current_page = 1
