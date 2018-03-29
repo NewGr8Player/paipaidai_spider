@@ -2,10 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import time
 from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
+import datetime
 
-TYPE_KPT = '8'  # LoanCategoryId 4:平衡型,8:保守型
-file_name = 'data.xlsx' # 存储数据文件名
+TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型
+file_name = 'data.xlsx'  # 存储数据文件名
+today = datetime.date.today()  # 启动date
+now = datetime.datetime.now()  # 启动datetime
+TYPE_KPT_MAP = {4: '平衡型', 8: '保守型'}  # 类型映射Map
+
 
 # html转换
 def html_to_soup(url):
@@ -17,10 +21,9 @@ def html_to_soup(url):
 # url构造器 获得爬取链接
 def url_constructor(page_index, type):
     base_url = 'https://invest.ppdai.com/loan/' \
-               'listnew?LoanCategoryId=' + type + \
+               'listnew?LoanCategoryId=' + str(type) + \
                '&PageIndex=' + str(page_index) + \
                '&SortType=0&MinAmount=0&MaxAmount=0'
-    # 处理逻辑
     aim_url = base_url
     return aim_url
 
@@ -110,7 +113,12 @@ def details_info_getter(details_url):
     statistics_info_list = tab_contain_divs[2].find_all('span', attrs={'class', 'num'})
 
     # 投资人情况List
-    ol_list = soup.find('div', attrs={'class': 'scroll-area'}).find_all('ol')
+    ol_list_parent = soup.find('div', attrs={'class': 'scroll-area'})
+    ol_list = []
+    if ol_list_parent is not None:
+        ol_list = ol_list_parent.find_all('ol')
+    else:
+        print('当前页面暂无投资人信息')
     # 投资人信息列表
     investor_list = []
     # 投资人单条信息
@@ -133,7 +141,7 @@ def details_info_getter(details_url):
 
     # 将信息放入字典中
     result_dic = {}  # 返回爬取结果字典
-    result_dic['risk_level'] = TYPE_KPT  # 风险等级
+    result_dic['risk_level'] = TYPE_KPT_MAP[TYPE_KPT]  # 风险等级
     if type(None) == type(pei_i):  # 赔标 [存在 `赔`图标 即视为`赔标`]
         result_dic['pei'] = '赔标'
     else:
@@ -188,8 +196,11 @@ def data_spider(total_page=100):
         url = url_constructor(current_page, TYPE_KPT)
         details_url_list = details_url_list_getter(url)
         if len(details_url_list) > 0:
+            print('爬取第' + str(current_page) + '页数据。')
             for it in details_url_list:
-                data_list.append(details_info_getter('https:' + it))
+                url = 'https:' + it
+                print('爬取链接:' + url)
+                data_list.append(details_info_getter(url))
             data_output_xls(data_list)  # 输出数据
             time.sleep(1)
         else:
@@ -205,22 +216,76 @@ def data_spider(total_page=100):
 # 输出数据到excel
 def data_output_xls(data_list):
     print('数据输出开始....')
+    wb = Workbook()
+    title = "拍拍贷数据" + str(now.strftime('%Y-%m-%d~%H-%M-%S'))
+    # 标题行
+    work_sheet = wb.create_sheet(title=title)
+    _ = work_sheet.cell(column=1, row=1, value="%s" % '风险等级')
+    _ = work_sheet.cell(column=2, row=1, value="%s" % '赔标/信用标')
+    _ = work_sheet.cell(column=3, row=1, value="%s" % '用户名')
+    _ = work_sheet.cell(column=4, row=1, value="%s" % '信用等级')
+    _ = work_sheet.cell(column=5, row=1, value="%s" % '贷款金额')
+    _ = work_sheet.cell(column=6, row=1, value="%s" % '利率')
+    _ = work_sheet.cell(column=7, row=1, value="%s" % '还款期限')
+    _ = work_sheet.cell(column=8, row=1, value="%s" % '性别')
+    _ = work_sheet.cell(column=9, row=1, value="%s" % '年龄')
+    _ = work_sheet.cell(column=10, row=1, value="%s" % '文化程度')
+    _ = work_sheet.cell(column=11, row=1, value="%s" % '学习形式')
+    _ = work_sheet.cell(column=12, row=1, value="%s" % '借款用途')
+    _ = work_sheet.cell(column=13, row=1, value="%s" % '还款来源')
+    _ = work_sheet.cell(column=14, row=1, value="%s" % '工作信息')
+    _ = work_sheet.cell(column=15, row=1, value="%s" % '收入情况')
+    _ = work_sheet.cell(column=16, row=1, value="%s" % '认证状况')
+    _ = work_sheet.cell(column=17, row=1, value="%s" % '成功借款次数')
+    _ = work_sheet.cell(column=18, row=1, value="%s" % '历史记录')
+    _ = work_sheet.cell(column=19, row=1, value="%s" % '逾期(0-15天)还清次数')
+    _ = work_sheet.cell(column=20, row=1, value="%s" % '逾期(15天以上)还清次数')
+    _ = work_sheet.cell(column=21, row=1, value="%s" % '累计借贷金额')
+    _ = work_sheet.cell(column=22, row=1, value="%s" % '待还金额')
+    _ = work_sheet.cell(column=24, row=1, value="%s" % '待收金额')
+    _ = work_sheet.cell(column=25, row=1, value="%s" % '历史最高负债')
+    _ = work_sheet.cell(column=23, row=1, value="%s" % '单笔最高借款金额')
+    _ = work_sheet.cell(column=26, row=1, value="%s" % '投标人名称')
+    _ = work_sheet.cell(column=27, row=1, value="%s" % '有效投标金额')
+    _ = work_sheet.cell(column=28, row=1, value="%s" % ' 投标日期')
+    row = 2
     for it in data_list:
-        wb = Workbook()
-        work_sheet = wb.create_sheet(title="拍拍贷数据")
-        row = 1
-        for i in range(len(data_list)):
-            for j in range(len(it['investor_list'])):
-                _ = work_sheet.cell(column=1, row=row, value="%s" % it['risk_level'])
-                _ = work_sheet.cell(column=2, row=row, value="%s" % it['user_name'])
-                _ = work_sheet.cell(column=3, row=row, value="%s" % it['investor_list'][j][''])
-                _ = work_sheet.cell(column=4, row=row, value="%s" % it['investor_list'][j][''])
-                row += 1
-        wb.save(filename=file_name)
+        # 数据行
+        _ = work_sheet.cell(column=1, row=row, value="%s" % it['risk_level'])  # 风险等级
+        _ = work_sheet.cell(column=2, row=row, value="%s" % it['pei'])  # 赔标/信用标
+        _ = work_sheet.cell(column=3, row=row, value="%s" % it['user_name'])  # 用户名
+        _ = work_sheet.cell(column=4, row=row, value="%s" % it['credit_level'])  # 信用等级
+        _ = work_sheet.cell(column=5, row=row, value="%s" % it['amount'])  # 贷款金额
+        _ = work_sheet.cell(column=6, row=row, value="%s" % it['rate'])  # 利率
+        _ = work_sheet.cell(column=7, row=row, value="%s" % it['term'])  # 还款期限
+        _ = work_sheet.cell(column=8, row=row, value="%s" % it['sex'])  # 性别
+        _ = work_sheet.cell(column=9, row=row, value="%s" % it['age'])  # 年龄
+        _ = work_sheet.cell(column=10, row=row, value="%s" % it['edu_bg'])  # 文化程度
+        _ = work_sheet.cell(column=11, row=row, value="%s" % it['learn_way'])  # 学习形式
+        _ = work_sheet.cell(column=12, row=row, value="%s" % it['lend_purpose'])  # 借款用途
+        _ = work_sheet.cell(column=13, row=row, value="%s" % it['payment'])  # 还款来源
+        _ = work_sheet.cell(column=14, row=row, value="%s" % it['work_info'])  # 工作信息
+        _ = work_sheet.cell(column=15, row=row, value="%s" % it['income_info'])  # 收入情况
+        _ = work_sheet.cell(column=16, row=row, value="%s" % it['verfied_info'])  # 认证状况
+        _ = work_sheet.cell(column=17, row=row, value="%s" % it['sucuess_cnt'])  # 成功借款次数
+        _ = work_sheet.cell(column=18, row=row, value="%s" % it['history_info'])  # 历史记录
+        _ = work_sheet.cell(column=19, row=row, value="%s" % it['delay_lt15_repayment_cnt'])  # 逾期(0-15天)还清次数
+        _ = work_sheet.cell(column=20, row=row, value="%s" % it['delay_gt15_repayment_cnt'])  # 逾期(15天以上)还清次数
+        _ = work_sheet.cell(column=21, row=row, value="%s" % it['amount_sum'])  # 累计借贷金额
+        _ = work_sheet.cell(column=22, row=row, value="%s" % it['unreturned_amount'])  # 待还金额
+        _ = work_sheet.cell(column=24, row=row, value="%s" % it['unreceived_amount'])  # 待收金额
+        _ = work_sheet.cell(column=25, row=row, value="%s" % it['biggest_lend_amount'])  # 历史最高负债
+        _ = work_sheet.cell(column=23, row=row, value="%s" % it['biggest_debt_amount'])  # 单笔最高借款金额
+        investor_list_size = len(it['investor_list'])  # 投资人信息数量
+        for i in range(investor_list_size):
+            _ = work_sheet.cell(column=26, row=row, value="%s" % it['investor_list'][i]['investor_id'])  # 投标人名称
+            _ = work_sheet.cell(column=27, row=row, value="%s" % it['investor_list'][i]['valid_amount'])  # 有效投标金额
+            _ = work_sheet.cell(column=28, row=row, value="%s" % it['investor_list'][i]['investment_date'])  # 投标日期
+            row += 1
+    wb.save(filename=file_name)
     print('数据输出完成....')
 
 
 # Main method
 if __name__ == '__main__':
     data_spider()
-
