@@ -20,9 +20,9 @@ def html_to_soup(url):
 
 
 # url构造器 获得爬取链接
-def url_constructor(page_index, type):
+def url_constructor(page_index, _type):
     base_url = 'https://invest.ppdai.com/loan/' \
-               'listnew?LoanCategoryId=' + str(type) + \
+               'listnew?LoanCategoryId=' + str(_type) + \
                '&PageIndex=' + str(page_index) + \
                '&SortType=0&MinAmount=0&MaxAmount=0'
     aim_url = base_url
