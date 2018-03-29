@@ -1,8 +1,9 @@
+import time
+import datetime
 import requests
 from bs4 import BeautifulSoup
-import time
 from openpyxl import Workbook
-import datetime
+
 
 TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 file_name = 'data.xlsx'  # 存储数据文件名
@@ -147,7 +148,7 @@ def details_info_getter(details_url):
     # 将信息放入字典中
     result_dic = {}  # 返回爬取结果字典
     result_dic['risk_level'] = TYPE_KPT_MAP[TYPE_KPT]  # 风险等级
-    if type(None) == type(pei_i):  # 赔标 [存在 `赔`图标 即视为`赔标`]
+    if pei_i is not None:  # 赔标 [存在 `赔`图标 即视为`赔标`]
         result_dic['pei'] = '赔标'
     else:
         result_dic['pei'] = '--'
