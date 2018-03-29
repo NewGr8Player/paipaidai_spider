@@ -187,7 +187,7 @@ def details_info_getter(details_url):
 def total_page_getter(url):
     soup = html_to_soup(url)
     page_info = soup.find('span', attrs={'class': 'pagerstatus'}).replace('共', '').replace('页', '').strip()
-    if type(None) == type(page_info):  # 可能出现不存在的情况
+    if page_info is None:  # 可能出现不存在的情况
         total_page = -1
     else:
         total_page = int(page_info, base=10)
