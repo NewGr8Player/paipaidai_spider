@@ -151,7 +151,7 @@ def details_info_getter(details_url):
         result_dic['pei'] = '赔标'
     else:
         result_dic['pei'] = '--'
-    result_dic['progress'] = progress
+    result_dic['progress'] = progress  # 完成度
     result_dic['user_name'] = user_name  # 用户名
     result_dic['credit_level'] = credit_level  # 信用等级
     result_dic['amount'] = new_lend_detail_money_list[0].get_text()  # 贷款金额
