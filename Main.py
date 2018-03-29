@@ -217,7 +217,7 @@ def data_spider(total_page=100):
 def data_output_xls(data_list):
     print('数据输出开始....')
     wb = Workbook()
-    title = "拍拍贷数据" + str(now.strftime('%Y-%m-%d~%H-%M-%S'))
+    title = "拍拍贷数据" + str(today)
     # 标题行
     work_sheet = wb.create_sheet(title=title)
     _ = work_sheet.cell(column=1, row=1, value="%s" % '风险等级')
