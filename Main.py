@@ -49,6 +49,10 @@ def details_url_list_getter(url):
 def details_info_getter(details_url):
     soup = html_to_soup(details_url)
 
+    # 满标页面 (图片alt内容)
+    if "借款成功" in soup:
+        print("满标页面....")
+
     # 整个信息列表所在的div
     wrap_new_lend_detail = soup.find('div', attrs={'class': 'wrapNewLendDetailInfoLeft'})
 
@@ -119,7 +123,10 @@ def details_info_getter(details_url):
         .find_all('div', attrs={'class': 'tab-contain'})
 
     # 统计信息
-    statistics_info_list = tab_contain_divs[2].find_all('span', attrs={'class', 'num'})
+    statistics_info_list = ["", "", "", "", "", "", "", "", "", "", ""]
+    for content in tab_contain_divs:  # Fixed:完成页面不包含统计信息
+        if "统计信息" in content:
+            statistics_info_list = it.find_all('span', attrs={'class', 'num'})
 
     # 投资人情况List
     ol_list_parent = soup.find('div', attrs={'class': 'scroll-area'})
@@ -172,17 +179,29 @@ def details_info_getter(details_url):
     result_dic['work_info'] = work_info  # 工作信息
     result_dic['income_info'] = income_info  # 收入情况
     result_dic['verfied_info'] = verfied_info  # 认证信息
-    result_dic['sucuess_cnt'] = statistics_info_list[0].get_text().strip()  # 成功借款次数
-    result_dic['history_info'] = statistics_info_list[1].get_text().strip()  # 历史记录
-    result_dic['sucuess_repayment_cnt'] = statistics_info_list[2].get_text().strip()  # 成功还款次数
-    result_dic['normal_repayment_cnt'] = statistics_info_list[3].get_text().strip()  # 正常还清次数
-    result_dic['delay_lt15_repayment_cnt'] = statistics_info_list[4].get_text().strip()  # 逾期(0-15天)还清次数
-    result_dic['delay_gt15_repayment_cnt'] = statistics_info_list[5].get_text().strip()  # 逾期(15天以上)还清次数
-    result_dic['amount_sum'] = statistics_info_list[6].get_text().strip().replace('¥', '')  # 累计借款金额
-    result_dic['unreturned_amount'] = statistics_info_list[7].get_text().strip().replace('¥', '')  # 待还金额
-    result_dic['unreceived_amount'] = statistics_info_list[8].get_text().strip().replace('¥', '')  # 待收金额
-    result_dic['biggest_lend_amount'] = statistics_info_list[9].get_text().strip().replace('¥', '')  # 单笔最高借款金额
-    result_dic['biggest_debt_amount'] = statistics_info_list[10].get_text().strip().replace('¥', '')  # 历史最高负债
+    # Fixed: 完成页面不包含统计信息
+    temp = statistics_info_list[0]
+    result_dic['sucuess_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功借款次数
+    temp = statistics_info_list[1]
+    result_dic['history_info'] = "-" if (not temp) else temp.get_text().strip()  # 历史记录
+    temp = statistics_info_list[2]
+    result_dic['sucuess_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功还款次数
+    temp = statistics_info_list[3]
+    result_dic['normal_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 正常还清次数
+    temp = statistics_info_list[4]
+    result_dic['delay_lt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(0-15天)还清次数
+    temp = statistics_info_list[5]
+    result_dic['delay_gt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(15天以上)还清次数
+    temp = statistics_info_list[6]
+    result_dic['amount_sum'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 累计借款金额
+    temp = statistics_info_list[7]
+    result_dic['unreturned_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待还金额
+    temp = statistics_info_list[8]
+    result_dic['unreceived_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待收金额
+    temp = statistics_info_list[9]
+    result_dic['biggest_lend_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 单笔最高借款金额
+    temp = statistics_info_list[10]
+    result_dic['biggest_debt_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 历史最高负债
     result_dic['investor_list'] = investor_list  # 投资信息列表
     return result_dic
 
@@ -311,4 +330,3 @@ def data_output_xls(data_list):
 # Main method
 if __name__ == '__main__':
     data_spider()
-    # TODO 满标页面修改导致爬取满标页面时程序报错
