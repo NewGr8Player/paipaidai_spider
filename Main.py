@@ -47,163 +47,173 @@ def details_url_list_getter(url):
 
 # 详情页信息提取
 def details_info_getter(details_url):
-    soup = html_to_soup(details_url)
+    try:  # 增加异常捕获，避免不可预见错误导致程序崩溃
+        soup = html_to_soup(details_url)
 
-    # 满标页面 (图片alt内容)
-    if "借款成功" in soup:
-        print("满标页面....")
+        # 满标页面 (图片alt内容)
+        if '借款成功' in soup:
+            print('满标页面....')
 
-    # 整个信息列表所在的div
-    wrap_new_lend_detail = soup.find('div', attrs={'class': 'wrapNewLendDetailInfoLeft'})
+        # 整个信息列表所在的div
+        wrap_new_lend_detail = soup.find('div', attrs={'class': 'wrapNewLendDetailInfoLeft'})
 
-    # 包含信用等级的a [信用等级详细值在其中span标签的class属性中]
-    credit_level = wrap_new_lend_detail.find('a', attrs={'class': 'altQust'}).find('span')['class'] \
-        .replace('creditRating ', '')
-    # 用户名
-    user_name = wrap_new_lend_detail.find('span', attrs={'class': 'username'}).get_text()
+        # 包含信用等级的a [信用等级详细值在其中span标签的class属性中]
+        credit_level = wrap_new_lend_detail.find('a', attrs={'class': 'altQust'}).find('span')['class'] \
+            .replace('creditRating ', '')
 
-    # 赔标/信用标
-    pei_i = soup.find('i', attrs={'class': 'pei'})
+        # 用户名
+        user_name = wrap_new_lend_detail.find('span', attrs={'class': 'username'}).get_text()
 
-    # 完成度
-    progress = soup.find('div', attrs={'class': 'newLendDetailRefundLeft'}) \
-        .find('div', attrs={'class': 'part clearfix'}) \
-        .find('div').get_text().replace('进度条：', '').strip()
+        # 赔标/信用标
+        pei_i = soup.find('i', attrs={'class': 'pei'})
 
-    # 借款的详细信息 [借款金额 , 协议利率 , 期限]
-    new_lend_detail_money_list = soup.find('div', attrs={'class': 'newLendDetailMoneyLeft'}).find_all('dd')
+        # 完成度
+        progress = soup.find('div', attrs={'class': 'newLendDetailRefundLeft'}) \
+            .find('div', attrs={'class': 'part clearfix'}) \
+            .find('div').get_text().replace('进度条：', '').strip()
 
-    # 人员详细信息 [性别 , 年龄 , 注册时间 , 文化程度 , 毕业院校 , 学习形式 , 借款用途 , 还款来源 , 工作信息 , 收入情况]
-    lender_info_list = soup.find('div', attrs={'class': 'lender-info'}).findAll('p', attrs={'class': 'ex col-1'})
-    # 信息可能不完全存在 , 需要特殊处理
-    sex = '--'  # 性别
-    age = '--'  # 年龄
-    regist_date = '--'  # 注册时间
-    edu_bg = '--'  # 文化程度
-    graduate = '--'  # 毕业院校
-    learn_way = '--'  # 学习形式
-    lend_purpose = '--'  # 借款用途
-    payment = '--'  # 还款来源
-    work_info = '--'  # 工作信息
-    income_info = '--'  # 收入情况
-    for it in lender_info_list:
-        if '性别' in str(it):
-            sex = it.find('span').get_text()
-        elif '年龄' in str(it):
-            age = it.find('span').get_text()
-        elif '注册时间' in str(it):
-            regist_date = it.find('span').get_text()
-        elif '文化程度' in str(it):
-            edu_bg = it.find('span').get_text()
-        elif '毕业院校' in str(it):
-            graduate = it.find('span').get_text()
-        elif '学习形式' in str(it):
-            learn_way = it.find('span').get_text()
-        elif '借款用途' in str(it):
-            lend_purpose = it.find('span').get_text()
-        elif '还款来源' in str(it):
-            payment = it.find('span').get_text()
-        elif '工作信息' in str(it):
-            work_info = it.find('span').get_text()
-        elif '收入情况' in str(it):
-            income_info = it.find('span').get_text()
+        # 借款的详细信息 [借款金额 , 协议利率 , 期限]
+        new_lend_detail_money_list = soup.find('div', attrs={'class': 'newLendDetailMoneyLeft'}).find_all('dd')
 
-    # 认证信息 [可能不存在]
-    record_info_list_parent = soup.find('ul', attrs={'class', 'record-info'})
-    record_info_list = []
-    if record_info_list_parent is not None:
-        record_info_list = record_info_list_parent.findAll('li')
-    verfied_info = '--'
-    for i in range(len(record_info_list)):
-        verfied_info += (record_info_list[i].get_text()) + ' '
-    verfied_info = verfied_info.strip()
+        # 人员详细信息 [性别 , 年龄 , 注册时间 , 文化程度 , 毕业院校 , 学习形式 , 借款用途 , 还款来源 , 工作信息 , 收入情况]
+        lender_info_list = soup.find('div', attrs={'class': 'lender-info'}).findAll('p', attrs={'class': 'ex col-1'})
 
-    # 总体div
-    tab_contain_divs = soup.find("div", attrs={'class': 'lendDetailTab_tabContent w1000center'}) \
-        .find_all('div', attrs={'class': 'tab-contain'})
+        # 信息可能不完全存在 , 需要特殊处理
+        sex = '--'  # 性别
+        age = '--'  # 年龄
+        regist_date = '--'  # 注册时间
+        edu_bg = '--'  # 文化程度
+        graduate = '--'  # 毕业院校
+        learn_way = '--'  # 学习形式
+        lend_purpose = '--'  # 借款用途
+        payment = '--'  # 还款来源
+        work_info = '--'  # 工作信息
+        income_info = '--'  # 收入情况
+        for it in lender_info_list:
+            if '性别' in str(it):
+                sex = it.find('span').get_text()
+            elif '年龄' in str(it):
+                age = it.find('span').get_text()
+            elif '注册时间' in str(it):
+                regist_date = it.find('span').get_text()
+            elif '文化程度' in str(it):
+                edu_bg = it.find('span').get_text()
+            elif '毕业院校' in str(it):
+                graduate = it.find('span').get_text()
+            elif '学习形式' in str(it):
+                learn_way = it.find('span').get_text()
+            elif '借款用途' in str(it):
+                lend_purpose = it.find('span').get_text()
+            elif '还款来源' in str(it):
+                payment = it.find('span').get_text()
+            elif '工作信息' in str(it):
+                work_info = it.find('span').get_text()
+            elif '收入情况' in str(it):
+                income_info = it.find('span').get_text()
 
-    # 统计信息
-    statistics_info_list = ["", "", "", "", "", "", "", "", "", "", ""]
-    for content in tab_contain_divs:  # Fixed:完成页面不包含统计信息
-        if "统计信息" in content:
-            statistics_info_list = it.find_all('span', attrs={'class', 'num'})
+        # 认证信息 [可能不存在]
+        record_info_list_parent = soup.find('ul', attrs={'class', 'record-info'})
+        record_info_list = []
+        if record_info_list_parent is not None:
+            record_info_list = record_info_list_parent.findAll('li')
+        verfied_info = '--'
+        for i in range(len(record_info_list)):
+            verfied_info += (record_info_list[i].get_text()) + ' '
+        verfied_info = verfied_info.strip()
 
-    # 投资人情况List
-    ol_list_parent = soup.find('div', attrs={'class': 'scroll-area'})
-    ol_list = []
-    if ol_list_parent is not None:
-        ol_list = ol_list_parent.find_all('ol')
-    else:
-        print('当前页面暂无投资人信息')
-    # 投资人信息列表
-    investor_list = []
-    # 投资人单条信息
-    for ol in ol_list:
-        # 单条投资人信息
-        investor_info = {}
-        li_list = ol.find_all('li')
-        investor_info['investor_id'] = li_list[0].find('span', attrs={'class': 'listname'}).get_text()  # 投资人id
-        investment_way_tag = li_list[0].find('a', attrs={'target': '_blank'})  # 投资方式 [根据图标区分 , 可能没有]
-        if 'title' in str(investment_way_tag):
-            investor_info['investment_way'] = investment_way_tag['title']
+        # 总体div
+        tab_contain_divs = soup.find("div", attrs={'class': 'lendDetailTab_tabContent w1000center'}) \
+            .find_all('div', attrs={'class': 'tab-contain'})
+
+        # 统计信息
+        statistics_info_list = ['', '', '', '', '', '', '', '', '', '', '']
+        for content in tab_contain_divs:  # Fixed:完成页面不包含统计信息
+            if "统计信息" in content:
+                statistics_info_list = it.find_all('span', attrs={'class', 'num'})
+
+        # 投资人情况List
+        ol_list_parent = soup.find('div', attrs={'class': 'scroll-area'})
+        ol_list = []
+        if ol_list_parent is not None:
+            ol_list = ol_list_parent.find_all('ol')
         else:
-            investor_info['investment_way'] = '未知'
+            print('当前页面暂无投资人信息')
 
-        investor_info['rate'] = li_list[1].get_text()  # 利率
-        investor_info['term'] = li_list[2].get_text()  # 期限
-        investor_info['valid_amount'] = li_list[3].get_text().replace('¥', '')  # 有效金额
-        investor_info['investment_date'] = li_list[4].get_text()  # 投标时间
-        investor_list.append(investor_info)
+        # 投资人信息列表
+        investor_list = []
 
-    # 将信息放入字典中
-    result_dic = {}  # 返回爬取结果字典
-    result_dic['risk_level'] = TYPE_KPT_MAP[TYPE_KPT]  # 风险等级
-    if pei_i is not None:  # 赔标 [存在 `赔`图标 即视为`赔标`]
-        result_dic['pei'] = '赔标'
-    else:
-        result_dic['pei'] = '--'
-    result_dic['progress'] = progress  # 完成度
-    result_dic['user_name'] = user_name  # 用户名
-    result_dic['credit_level'] = credit_level  # 信用等级
-    result_dic['amount'] = new_lend_detail_money_list[0].get_text()  # 贷款金额
-    result_dic['rate'] = new_lend_detail_money_list[1].get_text()  # 协议利率
-    result_dic['term'] = new_lend_detail_money_list[2].get_text()  # 期限
-    result_dic['sex'] = sex  # 性别
-    result_dic['age'] = age  # 年龄
-    result_dic['regist_date'] = regist_date  # 注册时间
-    result_dic['edu_bg'] = edu_bg  # 文化程度
-    result_dic['graduate'] = graduate  # 毕业院校
-    result_dic['learn_way'] = learn_way  # 学习形式
-    result_dic['lend_purpose'] = lend_purpose  # 借款用途
-    result_dic['payment'] = payment  # 还款来源
-    result_dic['work_info'] = work_info  # 工作信息
-    result_dic['income_info'] = income_info  # 收入情况
-    result_dic['verfied_info'] = verfied_info  # 认证信息
-    # Fixed: 完成页面不包含统计信息
-    temp = statistics_info_list[0]
-    result_dic['sucuess_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功借款次数
-    temp = statistics_info_list[1]
-    result_dic['history_info'] = "-" if (not temp) else temp.get_text().strip()  # 历史记录
-    temp = statistics_info_list[2]
-    result_dic['sucuess_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功还款次数
-    temp = statistics_info_list[3]
-    result_dic['normal_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 正常还清次数
-    temp = statistics_info_list[4]
-    result_dic['delay_lt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(0-15天)还清次数
-    temp = statistics_info_list[5]
-    result_dic['delay_gt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(15天以上)还清次数
-    temp = statistics_info_list[6]
-    result_dic['amount_sum'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 累计借款金额
-    temp = statistics_info_list[7]
-    result_dic['unreturned_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待还金额
-    temp = statistics_info_list[8]
-    result_dic['unreceived_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待收金额
-    temp = statistics_info_list[9]
-    result_dic['biggest_lend_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 单笔最高借款金额
-    temp = statistics_info_list[10]
-    result_dic['biggest_debt_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 历史最高负债
-    result_dic['investor_list'] = investor_list  # 投资信息列表
-    return result_dic
+        # 投资人单条信息
+        for ol in ol_list:
+            # 单条投资人信息
+            investor_info = {}
+            li_list = ol.find_all('li')
+            investor_info['investor_id'] = li_list[0].find('span', attrs={'class': 'listname'}).get_text()  # 投资人id
+            investment_way_tag = li_list[0].find('a', attrs={'target': '_blank'})  # 投资方式 [根据图标区分 , 可能没有]
+            if 'title' in str(investment_way_tag):
+                investor_info['investment_way'] = investment_way_tag['title']
+            else:
+                investor_info['investment_way'] = '未知'
+
+            investor_info['rate'] = li_list[1].get_text()  # 利率
+            investor_info['term'] = li_list[2].get_text()  # 期限
+            investor_info['valid_amount'] = li_list[3].get_text().replace('¥', '')  # 有效金额
+            investor_info['investment_date'] = li_list[4].get_text()  # 投标时间
+            investor_list.append(investor_info)
+
+        # 将信息放入字典中
+        result_dic = {}  # 返回爬取结果字典
+        result_dic['risk_level'] = TYPE_KPT_MAP[TYPE_KPT]  # 风险等级
+        if pei_i is not None:  # 赔标 [存在 `赔`图标 即视为`赔标`]
+            result_dic['pei'] = '赔标'
+        else:
+            result_dic['pei'] = '--'
+        result_dic['progress'] = progress  # 完成度
+        result_dic['user_name'] = user_name  # 用户名
+        result_dic['credit_level'] = credit_level  # 信用等级
+        result_dic['amount'] = new_lend_detail_money_list[0].get_text()  # 贷款金额
+        result_dic['rate'] = new_lend_detail_money_list[1].get_text()  # 协议利率
+        result_dic['term'] = new_lend_detail_money_list[2].get_text()  # 期限
+        result_dic['sex'] = sex  # 性别
+        result_dic['age'] = age  # 年龄
+        result_dic['regist_date'] = regist_date  # 注册时间
+        result_dic['edu_bg'] = edu_bg  # 文化程度
+        result_dic['graduate'] = graduate  # 毕业院校
+        result_dic['learn_way'] = learn_way  # 学习形式
+        result_dic['lend_purpose'] = lend_purpose  # 借款用途
+        result_dic['payment'] = payment  # 还款来源
+        result_dic['work_info'] = work_info  # 工作信息
+        result_dic['income_info'] = income_info  # 收入情况
+        result_dic['verfied_info'] = verfied_info  # 认证信息
+        # Fixed: 完成页面不包含统计信息
+        temp = statistics_info_list[0]
+        result_dic['sucuess_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功借款次数
+        temp = statistics_info_list[1]
+        result_dic['history_info'] = "-" if (not temp) else temp.get_text().strip()  # 历史记录
+        temp = statistics_info_list[2]
+        result_dic['sucuess_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功还款次数
+        temp = statistics_info_list[3]
+        result_dic['normal_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 正常还清次数
+        temp = statistics_info_list[4]
+        result_dic['delay_lt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(0-15天)还清次数
+        temp = statistics_info_list[5]
+        result_dic['delay_gt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(15天以上)还清次数
+        temp = statistics_info_list[6]
+        result_dic['amount_sum'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 累计借款金额
+        temp = statistics_info_list[7]
+        result_dic['unreturned_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待还金额
+        temp = statistics_info_list[8]
+        result_dic['unreceived_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待收金额
+        temp = statistics_info_list[9]
+        result_dic['biggest_lend_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 单笔最高借款金额
+        temp = statistics_info_list[10]
+        result_dic['biggest_debt_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 历史最高负债
+        result_dic['investor_list'] = investor_list  # 投资信息列表
+        return result_dic
+    except Exception as e:
+        print("未知错误,链接地址：" + str(details_url) + "\n错误信息:")
+        for info in e.args:  # 打印所有异常参数
+            print(info)
+        return {}  # 返回不包含任何信息的集合
 
 
 # 获取总页数 [用于修正]
@@ -247,7 +257,7 @@ def data_spider(total_page=100):
 
 # 输出数据到excel
 def data_output_xls(data_list):
-    print('数据输出开始....')
+    print('数据写入文件开始....')
     wb = Workbook()
     title = "拍拍贷数据" + str(today)
     # 标题行
@@ -323,8 +333,21 @@ def data_output_xls(data_list):
                 _ = work_sheet.cell(column=29, row=row, value="%s" % it['investor_list'][i]['valid_amount'])  # 有效投标金额
                 _ = work_sheet.cell(column=30, row=row, value="%s" % it['investor_list'][i]['investment_date'])  # 投标日期
             row += 1
-    wb.save(filename=file_name)
-    print('数据输出完成....')
+    try:
+        wb.save(filename=file_name)
+    except IOError as iox:
+        print('文件读写异常')
+        print(data_list)  # 将数据输出,避免数据因异常丢失
+        print('错误信息:')
+        for e in iox.args:
+            print(e)
+        print('数据写入文件失败....')
+    except Exception as unknown:
+        print("未知异常导致文件输出失败!错误信息:")
+        for e in unknown.args:
+            print(e)
+    else:
+        print('数据写入文件完成....')
 
 
 # Main method
