@@ -5,7 +5,7 @@ import random
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
 
-TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
+TYPE_KPT = 8  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 file_name = 'data.xlsx'  # 存储数据文件名
 today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
@@ -311,3 +311,4 @@ def data_output_xls(data_list):
 # Main method
 if __name__ == '__main__':
     data_spider()
+    # TODO 满标页面修改导致爬取满标页面时程序报错
