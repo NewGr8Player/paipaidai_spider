@@ -128,8 +128,8 @@ def details_info_getter(details_url):
         # 统计信息
         statistics_info_list = ['', '', '', '', '', '', '', '', '', '', '']
         for content in tab_contain_divs:  # Fixed:完成页面不包含统计信息
-            if "统计信息" in content:
-                statistics_info_list = it.find_all('span', attrs={'class', 'num'})
+            if "统计信息" in str(content):
+                statistics_info_list = content.find_all('span', attrs={'class', 'num'})
 
         # 投资人情况List
         ol_list_parent = soup.find('div', attrs={'class': 'scroll-area'})
