@@ -5,7 +5,7 @@ import random
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
 
-TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
+TYPE_KPT = 5  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 file_name = 'data.xlsx'  # 存储数据文件名
 today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
@@ -250,7 +250,7 @@ def data_spider(total_page=100):
             data_output_xls(data_list)  # 输出数据
         else:
             print('Error:未找到数据!\n尝试重新获取...')
-            current_page = 1
+            current_page = 0
             total_page = total_page_getter(url)
             if total_page == -1:  # 如果返回-1 则表示当前没有数据,休眠后继续尝试
                 time.sleep(10)
