@@ -5,7 +5,7 @@ import random
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
 
-TYPE_KPT = 8  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
+TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 file_name = 'data.xlsx'  # 存储数据文件名
 today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
@@ -116,10 +116,10 @@ def details_info_getter(details_url):
         record_info_list = []
         if record_info_list_parent is not None:
             record_info_list = record_info_list_parent.findAll('li')
-        verfied_info = '--'
+        verfied_info = ''
         for i in range(len(record_info_list)):
             verfied_info += (record_info_list[i].get_text()) + ' '
-        verfied_info = verfied_info.strip()
+        verfied_info = '--' if (not verfied_info) else verfied_info.strip()  # 内容为空时默认写入 `--`
 
         # 总体div
         tab_contain_divs = soup.find("div", attrs={'class': 'lendDetailTab_tabContent w1000center'}) \
@@ -259,7 +259,7 @@ def data_spider(total_page=100):
 def data_output_xls(data_list):
     print('数据写入文件开始....')
     wb = Workbook()
-    title = "拍拍贷数据" + str(today)
+    title = "拍拍贷数据" + str(today) + '_' + TYPE_KPT_MAP[TYPE_KPT]
     # 标题行
     work_sheet = wb.create_sheet(title=title)
     _ = work_sheet.cell(column=1, row=1, value="%s" % '风险等级')
