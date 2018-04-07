@@ -219,11 +219,14 @@ def details_info_getter(details_url):
 # 获取总页数 [用于修正]
 def total_page_getter(url):
     soup = html_to_soup(url)
-    page_info = soup.find('span', attrs={'class': 'pagerstatus'}).replace('共', '').replace('页', '').strip()
-    if page_info is None:  # 可能出现不存在的情况
+    if '很抱歉，热门列表已经被抢空啦' in str(soup):  # 页面不包含列表信息
         total_page = -1
     else:
-        total_page = int(page_info, base=10)
+        page_info = soup.find('span', attrs={'class': 'pagerstatus'}).replace('共', '').replace('页', '').strip()
+        if page_info is None:  # 可能出现不存在的情况
+            total_page = -1
+        else:
+            total_page = int(page_info, base=10)
     return total_page
 
 
