@@ -5,7 +5,7 @@ import random
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
 
-TYPE_KPT = 5  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
+TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 file_name = 'data.xlsx'  # 存储数据文件名
 today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
@@ -126,11 +126,10 @@ def details_info_getter(details_url):
             .find_all('div', attrs={'class': 'tab-contain'})
 
         # 统计信息
-        statistics_info_list = ['', '', '', '', '', '', '', '', '', '', '']
+        statistics_info_list = ['', '', '', '', '', '', '', '', '', '', '','']
         for content in tab_contain_divs:  # Fixed:完成页面不包含统计信息
             if "统计信息" in str(content):
                 statistics_info_list = content.find_all('span', attrs={'class', 'num'})
-
         # 投资人情况List
         ol_list_parent = soup.find('div', attrs={'class': 'scroll-area'})
         ol_list = []
@@ -188,24 +187,26 @@ def details_info_getter(details_url):
         temp = statistics_info_list[0]
         result_dic['sucuess_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功借款次数
         temp = statistics_info_list[1]
-        result_dic['history_info'] = "-" if (not temp) else temp.get_text().strip()  # 历史记录
+        result_dic['first_sucuess_date'] = "-" if (not temp) else temp.get_text().strip()  # 第一次成功借款时间
         temp = statistics_info_list[2]
-        result_dic['sucuess_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功还款次数
+        result_dic['history_info'] = "-" if (not temp) else temp.get_text().strip()  # 历史记录
         temp = statistics_info_list[3]
-        result_dic['normal_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 正常还清次数
+        result_dic['sucuess_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 成功还款次数
         temp = statistics_info_list[4]
-        result_dic['delay_lt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(0-15天)还清次数
+        result_dic['normal_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 正常还清次数
         temp = statistics_info_list[5]
-        result_dic['delay_gt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(15天以上)还清次数
+        result_dic['delay_lt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(0-15天)还清次数
         temp = statistics_info_list[6]
-        result_dic['amount_sum'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 累计借款金额
+        result_dic['delay_gt15_repayment_cnt'] = "-" if (not temp) else temp.get_text().strip()  # 逾期(15天以上)还清次数
         temp = statistics_info_list[7]
-        result_dic['unreturned_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待还金额
+        result_dic['amount_sum'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 累计借款金额
         temp = statistics_info_list[8]
-        result_dic['unreceived_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待收金额
+        result_dic['unreturned_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待还金额
         temp = statistics_info_list[9]
-        result_dic['biggest_lend_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 单笔最高借款金额
+        result_dic['unreceived_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 待收金额
         temp = statistics_info_list[10]
+        result_dic['biggest_lend_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 单笔最高借款金额
+        temp = statistics_info_list[11]
         result_dic['biggest_debt_amount'] = "-" if (not temp) else temp.get_text().strip().replace('¥', '')  # 历史最高负债
         result_dic['investor_list'] = investor_list  # 投资信息列表
         return result_dic
@@ -283,18 +284,20 @@ def data_output_xls(data_list):
     _ = work_sheet.cell(column=16, row=1, value="%s" % '收入情况')
     _ = work_sheet.cell(column=17, row=1, value="%s" % '认证状况')
     _ = work_sheet.cell(column=18, row=1, value="%s" % '成功借款次数')
-    _ = work_sheet.cell(column=19, row=1, value="%s" % '历史记录')
-    _ = work_sheet.cell(column=20, row=1, value="%s" % '逾期(0-15天)还清次数')
-    _ = work_sheet.cell(column=21, row=1, value="%s" % '逾期(15天以上)还清次数')
-    _ = work_sheet.cell(column=22, row=1, value="%s" % '累计借贷金额')
-    _ = work_sheet.cell(column=23, row=1, value="%s" % '待还金额')
-    _ = work_sheet.cell(column=24, row=1, value="%s" % '待收金额')
-    _ = work_sheet.cell(column=25, row=1, value="%s" % '历史最高负债')
-    _ = work_sheet.cell(column=26, row=1, value="%s" % '单笔最高借款金额')
-    _ = work_sheet.cell(column=27, row=1, value="%s" % '投标人名称')
-    _ = work_sheet.cell(column=28, row=1, value="%s" % '投资方式')
-    _ = work_sheet.cell(column=29, row=1, value="%s" % '有效投标金额')
-    _ = work_sheet.cell(column=30, row=1, value="%s" % ' 投标日期')
+    _ = work_sheet.cell(column=19, row=1, value="%s" % '成功还款次数')
+    _ = work_sheet.cell(column=20, row=1, value="%s" % '正常还清次数')
+    _ = work_sheet.cell(column=21, row=1, value="%s" % '历史记录')
+    _ = work_sheet.cell(column=22, row=1, value="%s" % '逾期(0-15天)还清次数')
+    _ = work_sheet.cell(column=23, row=1, value="%s" % '逾期(15天以上)还清次数')
+    _ = work_sheet.cell(column=24, row=1, value="%s" % '累计借贷金额')
+    _ = work_sheet.cell(column=25, row=1, value="%s" % '待还金额')
+    _ = work_sheet.cell(column=26, row=1, value="%s" % '待收金额')
+    _ = work_sheet.cell(column=27, row=1, value="%s" % '历史最高负债')
+    _ = work_sheet.cell(column=28, row=1, value="%s" % '单笔最高借款金额')
+    _ = work_sheet.cell(column=29, row=1, value="%s" % '投标人名称')
+    _ = work_sheet.cell(column=30, row=1, value="%s" % '投资方式')
+    _ = work_sheet.cell(column=31, row=1, value="%s" % '有效投标金额')
+    _ = work_sheet.cell(column=32, row=1, value="%s" % ' 投标日期')
     row = 2
     # 数据行
     for it in data_list:
@@ -322,19 +325,21 @@ def data_output_xls(data_list):
             _ = work_sheet.cell(column=16, row=row, value="%s" % it['income_info'])  # 收入情况
             _ = work_sheet.cell(column=17, row=row, value="%s" % it['verfied_info'])  # 认证状况
             _ = work_sheet.cell(column=18, row=row, value="%s" % it['sucuess_cnt'])  # 成功借款次数
-            _ = work_sheet.cell(column=19, row=row, value="%s" % it['history_info'])  # 历史记录
-            _ = work_sheet.cell(column=20, row=row, value="%s" % it['delay_lt15_repayment_cnt'])  # 逾期(0-15天)还清次数
-            _ = work_sheet.cell(column=21, row=row, value="%s" % it['delay_gt15_repayment_cnt'])  # 逾期(15天以上)还清次数
-            _ = work_sheet.cell(column=22, row=row, value="%s" % it['amount_sum'])  # 累计借贷金额
-            _ = work_sheet.cell(column=23, row=row, value="%s" % it['unreturned_amount'])  # 待还金额
-            _ = work_sheet.cell(column=24, row=row, value="%s" % it['unreceived_amount'])  # 待收金额
-            _ = work_sheet.cell(column=25, row=row, value="%s" % it['biggest_lend_amount'])  # 历史最高负债
-            _ = work_sheet.cell(column=26, row=row, value="%s" % it['biggest_debt_amount'])  # 单笔最高借款金额
+            _ = work_sheet.cell(column=19, row=row, value="%s" % it['sucuess_repayment_cnt'])  # 成功还款次数
+            _ = work_sheet.cell(column=20, row=row, value="%s" % it['normal_repayment_cnt'])  # 正常还清次数
+            _ = work_sheet.cell(column=21, row=row, value="%s" % it['history_info'])  # 历史记录
+            _ = work_sheet.cell(column=22, row=row, value="%s" % it['delay_lt15_repayment_cnt'])  # 逾期(0-15天)还清次数
+            _ = work_sheet.cell(column=23, row=row, value="%s" % it['delay_gt15_repayment_cnt'])  # 逾期(15天以上)还清次数
+            _ = work_sheet.cell(column=24, row=row, value="%s" % it['amount_sum'])  # 累计借贷金额
+            _ = work_sheet.cell(column=25, row=row, value="%s" % it['unreturned_amount'])  # 待还金额
+            _ = work_sheet.cell(column=26, row=row, value="%s" % it['unreceived_amount'])  # 待收金额
+            _ = work_sheet.cell(column=27, row=row, value="%s" % it['biggest_lend_amount'])  # 历史最高负债
+            _ = work_sheet.cell(column=28, row=row, value="%s" % it['biggest_debt_amount'])  # 单笔最高借款金额
             if investor_list_output_flag:
-                _ = work_sheet.cell(column=27, row=row, value="%s" % it['investor_list'][i]['investor_id'])  # 投标人名称
-                _ = work_sheet.cell(column=28, row=row, value="%s" % it['investor_list'][i]['investment_way'])  # 投资方式
-                _ = work_sheet.cell(column=29, row=row, value="%s" % it['investor_list'][i]['valid_amount'])  # 有效投标金额
-                _ = work_sheet.cell(column=30, row=row, value="%s" % it['investor_list'][i]['investment_date'])  # 投标日期
+                _ = work_sheet.cell(column=29, row=row, value="%s" % it['investor_list'][i]['investor_id'])  # 投标人名称
+                _ = work_sheet.cell(column=30, row=row, value="%s" % it['investor_list'][i]['investment_way'])  # 投资方式
+                _ = work_sheet.cell(column=31, row=row, value="%s" % it['investor_list'][i]['valid_amount'])  # 有效投标金额
+                _ = work_sheet.cell(column=32, row=row, value="%s" % it['investor_list'][i]['investment_date'])  # 投标日期
             row += 1
     try:
         wb.save(filename=file_name)
