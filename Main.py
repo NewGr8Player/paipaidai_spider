@@ -1,9 +1,9 @@
 import time
 import datetime
-import requests
 import random
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
+from selenium import webdriver
 
 TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 file_name = 'data.xlsx'  # 存储数据文件名
@@ -11,12 +11,15 @@ today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
 TYPE_KPT_MAP = {4: '平衡型', 8: '保守型', 5: '进取型'}  # 类型映射Map
 
+login_url = 'https://ac.ppdai.com/User/Login'  # 登陆链接
+
+brower = webdriver.Firefox()  # 使用浏览器
+
 
 # html转换
 def html_to_soup(url):
-    r = requests.get(url)
-    html = r.content
-    return BeautifulSoup(html, 'xml')
+    brower.get(url)
+    return BeautifulSoup(brower.page_source, 'xml')
 
 
 # url构造器 获得爬取链接
@@ -126,7 +129,7 @@ def details_info_getter(details_url):
             .find_all('div', attrs={'class': 'tab-contain'})
 
         # 统计信息
-        statistics_info_list = ['', '', '', '', '', '', '', '', '', '', '','']
+        statistics_info_list = ['', '', '', '', '', '', '', '', '', '', '', '']
         for content in tab_contain_divs:  # Fixed:完成页面不包含统计信息
             if "统计信息" in str(content):
                 statistics_info_list = content.find_all('span', attrs={'class', 'num'})
@@ -358,6 +361,19 @@ def data_output_xls(data_list):
         print('数据写入文件完成....')
 
 
+def login():
+    brower.get(login_url)
+    if input('完成登陆后请输入任意字符'):
+        return False
+    else:
+        return True
+
+
 # Main method
 if __name__ == '__main__':
-    data_spider()
+    try:
+        while login():
+            print('等待登陆')
+        data_spider()
+    finally:
+        brower.close()
