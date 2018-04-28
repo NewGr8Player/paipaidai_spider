@@ -13,7 +13,7 @@ TYPE_KPT_MAP = {4: '平衡型', 8: '保守型', 5: '进取型'}  # 类型映射M
 
 login_url = 'https://ac.ppdai.com/User/Login'  # 登陆链接
 
-brower = webdriver.Firefox()  # 使用浏览器
+brower = webdriver.Firefox()  # 使用火狐浏览器
 
 
 # html转换
