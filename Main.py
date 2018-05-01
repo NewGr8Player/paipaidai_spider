@@ -297,53 +297,48 @@ def data_output_xls(data_list):
     _ = work_sheet.cell(column=26, row=1, value="%s" % '待收金额')
     _ = work_sheet.cell(column=27, row=1, value="%s" % '历史最高负债')
     _ = work_sheet.cell(column=28, row=1, value="%s" % '单笔最高借款金额')
-    _ = work_sheet.cell(column=29, row=1, value="%s" % '投标人名称')
-    _ = work_sheet.cell(column=30, row=1, value="%s" % '投资方式')
-    _ = work_sheet.cell(column=31, row=1, value="%s" % '有效投标金额')
-    _ = work_sheet.cell(column=32, row=1, value="%s" % ' 投标日期')
+    _ = work_sheet.cell(column=29, row=1, value="%s" % '投资方式')
+    _ = work_sheet.cell(column=30, row=1, value="%s" % '投资金额筛和(自动投标)')
     row = 2
     # 数据行
     for it in data_list:
         investor_list_size = len(it['investor_list'])  # 投资人信息数量
-        investor_list_output_flag = True
-        if investor_list_size == 0:
-            investor_list_size = 1
-            investor_list_output_flag = False
+        _ = work_sheet.cell(column=1, row=row, value="%s" % it['risk_level'])  # 风险等级
+        _ = work_sheet.cell(column=2, row=row, value="%s" % it['pei'])  # 赔标/信用标
+        _ = work_sheet.cell(column=3, row=row, value="%s" % it['progress'])  # 完成度
+        _ = work_sheet.cell(column=4, row=row, value="%s" % it['user_name'])  # 用户名
+        _ = work_sheet.cell(column=5, row=row, value="%s" % it['credit_level'])  # 信用等级
+        _ = work_sheet.cell(column=6, row=row, value="%s" % it['amount'])  # 贷款金额
+        _ = work_sheet.cell(column=7, row=row, value="%s" % it['rate'])  # 利率
+        _ = work_sheet.cell(column=8, row=row, value="%s" % it['term'])  # 还款期限
+        _ = work_sheet.cell(column=9, row=row, value="%s" % it['sex'])  # 性别
+        _ = work_sheet.cell(column=10, row=row, value="%s" % it['age'])  # 年龄
+        _ = work_sheet.cell(column=11, row=row, value="%s" % it['edu_bg'])  # 文化程度
+        _ = work_sheet.cell(column=12, row=row, value="%s" % it['learn_way'])  # 学习形式
+        _ = work_sheet.cell(column=13, row=row, value="%s" % it['lend_purpose'])  # 借款用途
+        _ = work_sheet.cell(column=14, row=row, value="%s" % it['payment'])  # 还款来源
+        _ = work_sheet.cell(column=15, row=row, value="%s" % it['work_info'])  # 工作信息
+        _ = work_sheet.cell(column=16, row=row, value="%s" % it['income_info'])  # 收入情况
+        _ = work_sheet.cell(column=17, row=row, value="%s" % it['verfied_info'])  # 认证状况
+        _ = work_sheet.cell(column=18, row=row, value="%s" % it['sucuess_cnt'])  # 成功借款次数
+        _ = work_sheet.cell(column=19, row=row, value="%s" % it['sucuess_repayment_cnt'])  # 成功还款次数
+        _ = work_sheet.cell(column=20, row=row, value="%s" % it['normal_repayment_cnt'])  # 正常还清次数
+        _ = work_sheet.cell(column=21, row=row, value="%s" % it['history_info'])  # 历史记录
+        _ = work_sheet.cell(column=22, row=row, value="%s" % it['delay_lt15_repayment_cnt'])  # 逾期(0-15天)还清次数
+        _ = work_sheet.cell(column=23, row=row, value="%s" % it['delay_gt15_repayment_cnt'])  # 逾期(15天以上)还清次数
+        _ = work_sheet.cell(column=24, row=row, value="%s" % it['amount_sum'])  # 累计借贷金额
+        _ = work_sheet.cell(column=25, row=row, value="%s" % it['unreturned_amount'])  # 待还金额
+        _ = work_sheet.cell(column=26, row=row, value="%s" % it['unreceived_amount'])  # 待收金额
+        _ = work_sheet.cell(column=27, row=row, value="%s" % it['biggest_lend_amount'])  # 历史最高负债
+        _ = work_sheet.cell(column=28, row=row, value="%s" % it['biggest_debt_amount'])  # 单笔最高借款金额
+        total = 0.00
         for i in range(investor_list_size):
-            _ = work_sheet.cell(column=1, row=row, value="%s" % it['risk_level'])  # 风险等级
-            _ = work_sheet.cell(column=2, row=row, value="%s" % it['pei'])  # 赔标/信用标
-            _ = work_sheet.cell(column=3, row=row, value="%s" % it['progress'])  # 完成度
-            _ = work_sheet.cell(column=4, row=row, value="%s" % it['user_name'])  # 用户名
-            _ = work_sheet.cell(column=5, row=row, value="%s" % it['credit_level'])  # 信用等级
-            _ = work_sheet.cell(column=6, row=row, value="%s" % it['amount'])  # 贷款金额
-            _ = work_sheet.cell(column=7, row=row, value="%s" % it['rate'])  # 利率
-            _ = work_sheet.cell(column=8, row=row, value="%s" % it['term'])  # 还款期限
-            _ = work_sheet.cell(column=9, row=row, value="%s" % it['sex'])  # 性别
-            _ = work_sheet.cell(column=10, row=row, value="%s" % it['age'])  # 年龄
-            _ = work_sheet.cell(column=11, row=row, value="%s" % it['edu_bg'])  # 文化程度
-            _ = work_sheet.cell(column=12, row=row, value="%s" % it['learn_way'])  # 学习形式
-            _ = work_sheet.cell(column=13, row=row, value="%s" % it['lend_purpose'])  # 借款用途
-            _ = work_sheet.cell(column=14, row=row, value="%s" % it['payment'])  # 还款来源
-            _ = work_sheet.cell(column=15, row=row, value="%s" % it['work_info'])  # 工作信息
-            _ = work_sheet.cell(column=16, row=row, value="%s" % it['income_info'])  # 收入情况
-            _ = work_sheet.cell(column=17, row=row, value="%s" % it['verfied_info'])  # 认证状况
-            _ = work_sheet.cell(column=18, row=row, value="%s" % it['sucuess_cnt'])  # 成功借款次数
-            _ = work_sheet.cell(column=19, row=row, value="%s" % it['sucuess_repayment_cnt'])  # 成功还款次数
-            _ = work_sheet.cell(column=20, row=row, value="%s" % it['normal_repayment_cnt'])  # 正常还清次数
-            _ = work_sheet.cell(column=21, row=row, value="%s" % it['history_info'])  # 历史记录
-            _ = work_sheet.cell(column=22, row=row, value="%s" % it['delay_lt15_repayment_cnt'])  # 逾期(0-15天)还清次数
-            _ = work_sheet.cell(column=23, row=row, value="%s" % it['delay_gt15_repayment_cnt'])  # 逾期(15天以上)还清次数
-            _ = work_sheet.cell(column=24, row=row, value="%s" % it['amount_sum'])  # 累计借贷金额
-            _ = work_sheet.cell(column=25, row=row, value="%s" % it['unreturned_amount'])  # 待还金额
-            _ = work_sheet.cell(column=26, row=row, value="%s" % it['unreceived_amount'])  # 待收金额
-            _ = work_sheet.cell(column=27, row=row, value="%s" % it['biggest_lend_amount'])  # 历史最高负债
-            _ = work_sheet.cell(column=28, row=row, value="%s" % it['biggest_debt_amount'])  # 单笔最高借款金额
-            if investor_list_output_flag:
-                _ = work_sheet.cell(column=29, row=row, value="%s" % it['investor_list'][i]['investor_id'])  # 投标人名称
-                _ = work_sheet.cell(column=30, row=row, value="%s" % it['investor_list'][i]['investment_way'])  # 投资方式
-                _ = work_sheet.cell(column=31, row=row, value="%s" % it['investor_list'][i]['valid_amount'])  # 有效投标金额
-                _ = work_sheet.cell(column=32, row=row, value="%s" % it['investor_list'][i]['investment_date'])  # 投标日期
-            row += 1
+            if '自动投标' == it['investor_list'][i]['investment_way']:  # 只输出自动投标
+                total += float(it['investor_list'][i]['valid_amount'])  # 计算自动投标总和
+        if investor_list_size > 0:
+            _ = work_sheet.cell(column=29, row=row, value="%s" % '自动投标')  # 投资方式
+            _ = work_sheet.cell(column=30, row=row, value="%s" % total)  # 自动投资总和
+        row += 1
     try:
         wb.save(filename=file_name)
     except IOError as iox:
@@ -361,6 +356,7 @@ def data_output_xls(data_list):
         print('数据写入文件完成....')
 
 
+# 人工登陆
 def login():
     brower.get(login_url)
     if input('完成登陆后请输入任意字符'):
