@@ -13,13 +13,13 @@ TYPE_KPT_MAP = {4: '平衡型', 8: '保守型', 5: '进取型'}  # 类型映射M
 
 login_url = 'https://ac.ppdai.com/User/Login'  # 登陆链接
 
-brower = webdriver.Firefox()  # 使用火狐浏览器
+browser = webdriver.Firefox()  # 使用火狐浏览器
 
 
 # html转换
 def html_to_soup(url):
-    brower.get(url)
-    return BeautifulSoup(brower.page_source, 'xml')
+    browser.get(url)
+    return BeautifulSoup(browser.page_source, 'xml')
 
 
 # url构造器 获得爬取链接
@@ -358,7 +358,7 @@ def data_output_xls(data_list):
 
 # 人工登陆
 def login():
-    brower.get(login_url)
+    browser.get(login_url)
     if input('完成登陆后请输入任意字符'):
         return False
     else:
@@ -372,4 +372,4 @@ if __name__ == '__main__':
             print('等待登陆')
         data_spider()
     finally:
-        brower.close()
+        browser.close()
