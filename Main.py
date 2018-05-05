@@ -239,7 +239,7 @@ def total_page_getter(url):
 def data_spider(total_page=100):
     current_page = 1
     data_list = []
-    while current_page < total_page:
+    while current_page <= total_page:
         url = url_constructor(current_page, TYPE_KPT)
         details_url_list = details_url_list_getter(url)
         if len(details_url_list) > 0:
@@ -371,6 +371,7 @@ if __name__ == '__main__':
     try:
         while login():
             print('等待登陆')
-        data_spider()
+        while True:  # 循环爬取前两页数据,如不需要循环爬取前两页数据只需要 删掉循环 使用 data_spider() 即可
+            data_spider(2)
     finally:
         browser.close()
