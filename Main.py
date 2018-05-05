@@ -6,6 +6,7 @@ from openpyxl import Workbook
 from selenium import webdriver
 
 TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
+TYPE_SORT = 1  # 0不排序,1降序,2升序
 file_name = 'data.xlsx'  # 存储数据文件名
 today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
@@ -27,7 +28,7 @@ def url_constructor(page_index, _type):
     base_url = 'https://invest.ppdai.com/loan/' \
                'listnew?LoanCategoryId=' + str(_type) + \
                '&PageIndex=' + str(page_index) + \
-               '&SortType=0&MinAmount=0&MaxAmount=0'
+               '&SortType=' + str(TYPE_SORT) + '&MinAmount=0&MaxAmount=0'
     aim_url = base_url
     return aim_url
 
