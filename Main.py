@@ -1,9 +1,42 @@
+import os
 import time
 import datetime
 import random
 from bs4 import BeautifulSoup
+from openpyxl import load_workbook
 from openpyxl import Workbook
 from selenium import webdriver
+
+data_xls_poz_map = {
+    1: {'name': '风险等级', 'code': 'risk_level'},
+    2: {'name': '赔标/信用标', 'code': 'pei'},
+    3: {'name': '完成度', 'code': 'progress'},
+    4: {'name': '用户名', 'code': 'user_name'},
+    5: {'name': '信用等级', 'code': 'credit_level'},
+    6: {'name': '贷款金额', 'code': 'amount'},
+    7: {'name': '利率', 'code': 'rate'},
+    8: {'name': '还款期限', 'code': 'term'},
+    9: {'name': '性别', 'code': 'sex'},
+    10: {'name': '年龄', 'code': 'age'},
+    11: {'name': '文化程度', 'code': 'edu_bg'},
+    12: {'name': '学习形式', 'code': 'learn_way'},
+    13: {'name': '借款用途', 'code': 'lend_purpose'},
+    14: {'name': '还款来源', 'code': 'payment'},
+    15: {'name': '工作信息', 'code': 'work_info'},
+    16: {'name': '收入情况', 'code': 'income_info'},
+    17: {'name': '认证状况', 'code': 'verfied_info'},
+    18: {'name': '成功借款次数', 'code': 'sucuess_cnt'},
+    19: {'name': '成功还款次数', 'code': 'sucuess_repayment_cnt'},
+    20: {'name': '正常还清次数', 'code': 'normal_repayment_cnt'},
+    21: {'name': '历史记录', 'code': 'history_info'},
+    22: {'name': '逾期(0-15天)还清次数', 'code': 'delay_lt15_repayment_cnt'},
+    23: {'name': '逾期(15天以上)还清次数', 'code': 'delay_gt15_repayment_cnt'},
+    24: {'name': '累计借贷金额', 'code': 'amount_sum'},
+    25: {'name': '待还金额', 'code': 'unreturned_amount'},
+    26: {'name': '待收金额', 'code': 'unreceived_amount'},
+    27: {'name': '历史最高负债', 'code': 'biggest_lend_amount'},
+    28: {'name': '单笔最高借款金额', 'code': 'biggest_debt_amount'}
+}
 
 TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 TYPE_SORT = 1  # 0不排序,1降序,2升序
@@ -11,6 +44,7 @@ file_name = 'data.xlsx'  # 存储数据文件名
 today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
 TYPE_KPT_MAP = {4: '平衡型', 8: '保守型', 5: '进取型'}  # 类型映射Map
+row = 2  # 表格数据开始行
 
 login_url = 'https://ac.ppdai.com/User/Login'  # 登陆链接
 
@@ -266,72 +300,26 @@ def data_spider(total_page=100):
 # 输出数据到excel
 def data_output_xls(data_list):
     print('数据写入文件开始....')
-    wb = Workbook()
+    xls_data_column_length = len(data_xls_poz_map)
+    # 文件不存在则创建文件
+    if not os.path.exists(file_name):
+        wb = Workbook()
+    else:
+        wb = load_workbook(file_name)
     title = "拍拍贷数据" + str(today) + '_' + TYPE_KPT_MAP[TYPE_KPT]
+    if title not in wb.sheetnames:
+        work_sheet = wb.create_sheet(title=title)
+    else:
+        work_sheet = wb[title]
     # 标题行
-    work_sheet = wb.create_sheet(title=title)
-    _ = work_sheet.cell(column=1, row=1, value="%s" % '风险等级')
-    _ = work_sheet.cell(column=2, row=1, value="%s" % '赔标/信用标')
-    _ = work_sheet.cell(column=3, row=1, value="%s" % '完成度')
-    _ = work_sheet.cell(column=4, row=1, value="%s" % '用户名')
-    _ = work_sheet.cell(column=5, row=1, value="%s" % '信用等级')
-    _ = work_sheet.cell(column=6, row=1, value="%s" % '贷款金额')
-    _ = work_sheet.cell(column=7, row=1, value="%s" % '利率')
-    _ = work_sheet.cell(column=8, row=1, value="%s" % '还款期限')
-    _ = work_sheet.cell(column=9, row=1, value="%s" % '性别')
-    _ = work_sheet.cell(column=10, row=1, value="%s" % '年龄')
-    _ = work_sheet.cell(column=11, row=1, value="%s" % '文化程度')
-    _ = work_sheet.cell(column=12, row=1, value="%s" % '学习形式')
-    _ = work_sheet.cell(column=13, row=1, value="%s" % '借款用途')
-    _ = work_sheet.cell(column=14, row=1, value="%s" % '还款来源')
-    _ = work_sheet.cell(column=15, row=1, value="%s" % '工作信息')
-    _ = work_sheet.cell(column=16, row=1, value="%s" % '收入情况')
-    _ = work_sheet.cell(column=17, row=1, value="%s" % '认证状况')
-    _ = work_sheet.cell(column=18, row=1, value="%s" % '成功借款次数')
-    _ = work_sheet.cell(column=19, row=1, value="%s" % '成功还款次数')
-    _ = work_sheet.cell(column=20, row=1, value="%s" % '正常还清次数')
-    _ = work_sheet.cell(column=21, row=1, value="%s" % '历史记录')
-    _ = work_sheet.cell(column=22, row=1, value="%s" % '逾期(0-15天)还清次数')
-    _ = work_sheet.cell(column=23, row=1, value="%s" % '逾期(15天以上)还清次数')
-    _ = work_sheet.cell(column=24, row=1, value="%s" % '累计借贷金额')
-    _ = work_sheet.cell(column=25, row=1, value="%s" % '待还金额')
-    _ = work_sheet.cell(column=26, row=1, value="%s" % '待收金额')
-    _ = work_sheet.cell(column=27, row=1, value="%s" % '历史最高负债')
-    _ = work_sheet.cell(column=28, row=1, value="%s" % '单笔最高借款金额')
-    _ = work_sheet.cell(column=29, row=1, value="%s" % '投资方式')
-    _ = work_sheet.cell(column=30, row=1, value="%s" % '投资金额筛和(自动投标)')
-    row = 2
+    for i in range(1, xls_data_column_length):
+        _ = work_sheet.cell(column=i, row=1, value="%s" % data_xls_poz_map[i]['name'])
     # 数据行
+    global row
     for it in data_list:
         investor_list_size = len(it['investor_list'])  # 投资人信息数量
-        _ = work_sheet.cell(column=1, row=row, value="%s" % it['risk_level'])  # 风险等级
-        _ = work_sheet.cell(column=2, row=row, value="%s" % it['pei'])  # 赔标/信用标
-        _ = work_sheet.cell(column=3, row=row, value="%s" % it['progress'])  # 完成度
-        _ = work_sheet.cell(column=4, row=row, value="%s" % it['user_name'])  # 用户名
-        _ = work_sheet.cell(column=5, row=row, value="%s" % it['credit_level'])  # 信用等级
-        _ = work_sheet.cell(column=6, row=row, value="%s" % it['amount'])  # 贷款金额
-        _ = work_sheet.cell(column=7, row=row, value="%s" % it['rate'])  # 利率
-        _ = work_sheet.cell(column=8, row=row, value="%s" % it['term'])  # 还款期限
-        _ = work_sheet.cell(column=9, row=row, value="%s" % it['sex'])  # 性别
-        _ = work_sheet.cell(column=10, row=row, value="%s" % it['age'])  # 年龄
-        _ = work_sheet.cell(column=11, row=row, value="%s" % it['edu_bg'])  # 文化程度
-        _ = work_sheet.cell(column=12, row=row, value="%s" % it['learn_way'])  # 学习形式
-        _ = work_sheet.cell(column=13, row=row, value="%s" % it['lend_purpose'])  # 借款用途
-        _ = work_sheet.cell(column=14, row=row, value="%s" % it['payment'])  # 还款来源
-        _ = work_sheet.cell(column=15, row=row, value="%s" % it['work_info'])  # 工作信息
-        _ = work_sheet.cell(column=16, row=row, value="%s" % it['income_info'])  # 收入情况
-        _ = work_sheet.cell(column=17, row=row, value="%s" % it['verfied_info'])  # 认证状况
-        _ = work_sheet.cell(column=18, row=row, value="%s" % it['sucuess_cnt'])  # 成功借款次数
-        _ = work_sheet.cell(column=19, row=row, value="%s" % it['sucuess_repayment_cnt'])  # 成功还款次数
-        _ = work_sheet.cell(column=20, row=row, value="%s" % it['normal_repayment_cnt'])  # 正常还清次数
-        _ = work_sheet.cell(column=21, row=row, value="%s" % it['history_info'])  # 历史记录
-        _ = work_sheet.cell(column=22, row=row, value="%s" % it['delay_lt15_repayment_cnt'])  # 逾期(0-15天)还清次数
-        _ = work_sheet.cell(column=23, row=row, value="%s" % it['delay_gt15_repayment_cnt'])  # 逾期(15天以上)还清次数
-        _ = work_sheet.cell(column=24, row=row, value="%s" % it['amount_sum'])  # 累计借贷金额
-        _ = work_sheet.cell(column=25, row=row, value="%s" % it['unreturned_amount'])  # 待还金额
-        _ = work_sheet.cell(column=26, row=row, value="%s" % it['unreceived_amount'])  # 待收金额
-        _ = work_sheet.cell(column=27, row=row, value="%s" % it['biggest_lend_amount'])  # 历史最高负债
-        _ = work_sheet.cell(column=28, row=row, value="%s" % it['biggest_debt_amount'])  # 单笔最高借款金额
+        for i in range(1, xls_data_column_length):  # 最后两列不输出数据
+            _ = work_sheet.cell(column=i, row=row, value="%s" % it[data_xls_poz_map[i]['code']])
         total = 0.00
         for i in range(investor_list_size):
             if '自动投标' == it['investor_list'][i]['investment_way']:  # 只输出自动投标
@@ -371,7 +359,12 @@ if __name__ == '__main__':
     try:
         while login():
             print('等待登陆')
-        while True:  # 循环爬取前两页数据,如不需要循环爬取前两页数据只需要 删掉循环 使用 data_spider() 即可
+        '''
+        循环爬取前两页数据
+        如不需要循环爬取前两页数据只需要,删掉循环 
+        使用 data_spider() 即可
+        '''
+        while True:
             data_spider(2)
     finally:
         browser.close()
