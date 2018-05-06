@@ -8,39 +8,15 @@ from openpyxl import Workbook
 from selenium import webdriver
 
 data_xls_poz_map = {
-    1: {'name': '风险等级', 'code': 'risk_level'},
-    2: {'name': '赔标/信用标', 'code': 'pei'},
-    3: {'name': '完成度', 'code': 'progress'},
-    4: {'name': '用户名', 'code': 'user_name'},
-    5: {'name': '信用等级', 'code': 'credit_level'},
-    6: {'name': '贷款金额', 'code': 'amount'},
-    7: {'name': '利率', 'code': 'rate'},
-    8: {'name': '还款期限', 'code': 'term'},
-    9: {'name': '性别', 'code': 'sex'},
-    10: {'name': '年龄', 'code': 'age'},
-    11: {'name': '文化程度', 'code': 'edu_bg'},
-    12: {'name': '学习形式', 'code': 'learn_way'},
-    13: {'name': '借款用途', 'code': 'lend_purpose'},
-    14: {'name': '还款来源', 'code': 'payment'},
-    15: {'name': '工作信息', 'code': 'work_info'},
-    16: {'name': '收入情况', 'code': 'income_info'},
-    17: {'name': '认证状况', 'code': 'verfied_info'},
-    18: {'name': '成功借款次数', 'code': 'sucuess_cnt'},
-    19: {'name': '成功还款次数', 'code': 'sucuess_repayment_cnt'},
-    20: {'name': '正常还清次数', 'code': 'normal_repayment_cnt'},
-    21: {'name': '历史记录', 'code': 'history_info'},
-    22: {'name': '逾期(0-15天)还清次数', 'code': 'delay_lt15_repayment_cnt'},
-    23: {'name': '逾期(15天以上)还清次数', 'code': 'delay_gt15_repayment_cnt'},
-    24: {'name': '累计借贷金额', 'code': 'amount_sum'},
-    25: {'name': '待还金额', 'code': 'unreturned_amount'},
-    26: {'name': '待收金额', 'code': 'unreceived_amount'},
-    27: {'name': '历史最高负债', 'code': 'biggest_lend_amount'},
-    28: {'name': '单笔最高借款金额', 'code': 'biggest_debt_amount'}
+    1: {'name': '用户名', 'code': 'user_name'},
+    2: {'name': '信用等级', 'code': 'credit_level'},
+    3: {'name': '贷款金额', 'code': 'amount'},
+    4: {'name': '还款期限', 'code': 'term'}
 }
 
 TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
 TYPE_SORT = 1  # 0不排序,1降序,2升序
-file_name = 'data.xlsx'  # 存储数据文件名
+file_name = 'data_history.xlsx'  # 存储数据文件名
 today = datetime.date.today()  # 启动date
 now = datetime.datetime.now()  # 启动datetime
 TYPE_KPT_MAP = {4: '平衡型', 8: '保守型', 5: '进取型'}  # 类型映射Map
@@ -48,8 +24,16 @@ row = 2  # 表格数据开始行
 
 login_url = 'https://ac.ppdai.com/User/Login'  # 登陆链接
 base_url = 'https://invest.ppdai.com'  # 基础链接前缀
-
 browser = webdriver.Firefox()  # 使用火狐浏览器
+
+
+# 人工登陆
+def login():
+    browser.get(login_url)
+    if input('完成登陆后请输入任意字符'):
+        return False
+    else:
+        return True
 
 
 # html转换
@@ -80,6 +64,20 @@ def details_url_list_getter(url):
         for a in a_s:
             details_urls.append(a['href'])
         return details_urls
+
+
+# 获取总页数 [用于修正]
+def total_page_getter(url):
+    soup = html_to_soup(url)
+    if '很抱歉，热门列表已经被抢空啦' in str(soup):  # 页面不包含列表信息
+        total_page = -1
+    else:
+        page_info = soup.find('span', attrs={'class': 'pagerstatus'}).replace('共', '').replace('页', '').strip()
+        if page_info is None:  # 可能出现不存在的情况
+            total_page = -1
+        else:
+            total_page = int(page_info, base=10)
+    return total_page
 
 
 # 详情页信息提取
@@ -254,20 +252,6 @@ def details_info_getter(details_url):
         return {}  # 返回不包含任何信息的集合
 
 
-# 获取总页数 [用于修正]
-def total_page_getter(url):
-    soup = html_to_soup(url)
-    if '很抱歉，热门列表已经被抢空啦' in str(soup):  # 页面不包含列表信息
-        total_page = -1
-    else:
-        page_info = soup.find('span', attrs={'class': 'pagerstatus'}).replace('共', '').replace('页', '').strip()
-        if page_info is None:  # 可能出现不存在的情况
-            total_page = -1
-        else:
-            total_page = int(page_info, base=10)
-    return total_page
-
-
 # 爬取逻辑
 def data_spider(total_page=100):
     current_page = 1
@@ -280,7 +264,7 @@ def data_spider(total_page=100):
             for it in details_url_list:
                 url = 'https:' + it
                 print('爬取链接:' + url)
-                data_list.append(details_info_getter(url))
+                data_list += history_spider(url)
                 # 网站有一定的反爬虫机制，长期规律性连接可能导致Ip被锁或黑名单
                 sleep_second = random.randint(0, 1)
                 print('随机休眠' + str(sleep_second) + '秒...')
@@ -296,6 +280,29 @@ def data_spider(total_page=100):
         current_page += 1
 
 
+# 历史成功借款链接
+def history_url_spider(url):
+    # class ellip href
+    details_page_source = html_to_soup(url)
+    ret_list = []
+    for it in details_page_source.find_all('a', attrs={'class': 'ellip'}):
+        ret_list.append(base_url + it['href'])
+    return ret_list
+
+
+# 历史成功借款信息
+def history_spider(url, limit_num=1):
+    history_url_list = history_url_spider(url)
+    length = len(history_url_list)
+    length = limit_num if length > limit_num else length
+    result_list = []
+    for i in range(0, length):
+        temp = details_info_getter(history_url_list[i])
+        if temp:
+            result_list.append(temp)
+    return result_list
+
+
 # 输出数据到excel
 def data_output_xls(data_list):
     print('数据写入文件开始....')
@@ -305,7 +312,7 @@ def data_output_xls(data_list):
         wb = Workbook()
     else:
         wb = load_workbook(file_name)
-    title = "拍拍贷数据" + str(today) + '_' + TYPE_KPT_MAP[TYPE_KPT]
+    title = "拍拍贷借贷历史数据" + str(today) + '_' + TYPE_KPT_MAP[TYPE_KPT]
     if title not in wb.sheetnames:
         work_sheet = wb.create_sheet(title=title)
     else:
@@ -324,8 +331,8 @@ def data_output_xls(data_list):
             if '自动投标' == it['investor_list'][i]['investment_way']:  # 只输出自动投标
                 total += float(it['investor_list'][i]['valid_amount'])  # 计算自动投标总和
         if investor_list_size > 0:
-            _ = work_sheet.cell(column=29, row=row, value="%s" % '自动投标')  # 投资方式
-            _ = work_sheet.cell(column=30, row=row, value="%s" % total)  # 自动投资总和
+            _ = work_sheet.cell(column=5, row=row, value="%s" % '自动投标')  # 投资方式
+            _ = work_sheet.cell(column=6, row=row, value="%s" % total)  # 自动投资总和
         row += 1
     try:
         wb.save(filename=file_name)
@@ -344,26 +351,12 @@ def data_output_xls(data_list):
         print('数据写入文件完成....')
 
 
-# 人工登陆
-def login():
-    browser.get(login_url)
-    if input('完成登陆后请输入任意字符'):
-        return False
-    else:
-        return True
-
-
 # Main method
 if __name__ == '__main__':
     try:
         while login():
             print('等待登陆')
-        '''
-        循环爬取前两页数据
-        如不需要循环爬取前两页数据只需要,删掉循环 
-        使用 data_spider() 即可
-        '''
         while True:
-            data_spider(2)
+            data_spider()
     finally:
         browser.close()
