@@ -7,6 +7,19 @@ from openpyxl import load_workbook
 from openpyxl import Workbook
 from selenium import webdriver
 
+TYPE_KPT = 8  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
+TYPE_SORT = 1  # 0不排序,1降序,2升序
+file_name = 'data.xlsx'  # 存储数据文件名
+today = datetime.date.today()  # 启动date
+now = datetime.datetime.now()  # 启动datetime
+TYPE_KPT_MAP = {4: '平衡型', 8: '保守型', 5: '进取型'}  # 类型映射Map
+row = 2  # 表格数据开始行
+
+login_url = 'https://ac.ppdai.com/User/Login'  # 登陆链接
+base_url = 'https://invest.ppdai.com'  # 基础链接前缀
+
+browser = webdriver.Firefox()  # 使用火狐浏览器
+
 data_xls_poz_map = {
     1: {'name': '风险等级', 'code': 'risk_level'},
     2: {'name': '赔标/信用标', 'code': 'pei'},
@@ -37,19 +50,6 @@ data_xls_poz_map = {
     27: {'name': '历史最高负债', 'code': 'biggest_lend_amount'},
     28: {'name': '单笔最高借款金额', 'code': 'biggest_debt_amount'}
 }
-
-TYPE_KPT = 4  # LoanCategoryId 4:平衡型,8:保守型,5:进取型
-TYPE_SORT = 1  # 0不排序,1降序,2升序
-file_name = 'data.xlsx'  # 存储数据文件名
-today = datetime.date.today()  # 启动date
-now = datetime.datetime.now()  # 启动datetime
-TYPE_KPT_MAP = {4: '平衡型', 8: '保守型', 5: '进取型'}  # 类型映射Map
-row = 2  # 表格数据开始行
-
-login_url = 'https://ac.ppdai.com/User/Login'  # 登陆链接
-base_url = 'https://invest.ppdai.com'  # 基础链接前缀
-
-browser = webdriver.Firefox()  # 使用火狐浏览器
 
 
 # html转换
@@ -198,6 +198,7 @@ def details_info_getter(details_url):
 
         # 将信息放入字典中
         result_dic = {}  # 返回爬取结果字典
+        result_dic['url'] = details_url  # 爬取的链接
         result_dic['risk_level'] = TYPE_KPT_MAP[TYPE_KPT]  # 风险等级
         if pei_i is not None:  # 赔标 [存在 `赔`图标 即视为`赔标`]
             result_dic['pei'] = '赔标'
@@ -316,13 +317,16 @@ def data_output_xls(data_list):
     # 数据行
     global row
     for it in data_list:
-        investor_list_size = len(it['investor_list'])  # 投资人信息数量
         for i in range(1, xls_data_column_length):  # 最后两列不输出数据
             _ = work_sheet.cell(column=i, row=row, value="%s" % it[data_xls_poz_map[i]['code']])
         total = 0.00
-        for i in range(investor_list_size):
-            if '自动投标' == it['investor_list'][i]['investment_way']:  # 只输出自动投标
-                total += float(it['investor_list'][i]['valid_amount'])  # 计算自动投标总和
+        if 'investor_list' in it:
+            investor_list_size = len(it['investor_list'])  # 投资人信息数量
+            for i in range(0, investor_list_size):
+                if '自动投标' == it['investor_list'][i]['investment_way']:  # 只输出自动投标
+                    total += float(it['investor_list'][i]['valid_amount'])  # 计算自动投标总和
+        else:
+            print("Error link:", data_list['url'])
         if investor_list_size > 0:
             _ = work_sheet.cell(column=29, row=row, value="%s" % '自动投标')  # 投资方式
             _ = work_sheet.cell(column=30, row=row, value="%s" % total)  # 自动投资总和
